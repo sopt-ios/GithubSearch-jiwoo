@@ -21,7 +21,7 @@ class GithubSearchViewController: UIViewController {
     var limit: Int = 20
     var refreshState: Bool = false
     var totalEntries: Int = 0
-    var token: String = "7efa8c3da6eb76f9baf5261c5ed2488026078012"
+    var token: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
