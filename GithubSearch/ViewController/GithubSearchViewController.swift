@@ -13,6 +13,7 @@ class GithubSearchViewController: UIViewController {
     @IBOutlet weak var githubSearchTableView: UITableView!
     @IBOutlet weak var noDataLabel: UILabel!
     
+    var spinner: UIActivityIndicatorView!
     var displaySearchUsersItems: [SearchUsersItems] = []
     var searchUsersItems: [SearchUsersItems] = []
     var usersNamesArray: [String] = []
@@ -21,7 +22,7 @@ class GithubSearchViewController: UIViewController {
     var limit: Int = 20
     var refreshState: Bool = false
     var totalEntries: Int = 0
-    var token: String = ""
+    var token: String = "f9d17ec535c764582609378b9d84dbfbf48cd10e"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,9 +52,6 @@ class GithubSearchViewController: UIViewController {
     func getUserPublicRepoCnt(startIndex: Int) {
         let group = DispatchGroup()
         
-        let work = DispatchWorkItem {
-            self.perform(#selector(self.loadTable), with: nil, afterDelay: 0.5)
-        }
         if self.totalEntries < self.limit {
             for index in startIndex..<self.totalEntries {
                 group.enter()
@@ -71,10 +69,28 @@ class GithubSearchViewController: UIViewController {
                 }
             }
         }
-        group.notify(queue: .main, work: work)
+        
+        group.notify(queue: .main) {
+            if self.refreshState == true {
+                self.spinner.stopAnimating()
+                self.spinner.isHidden = true
+                self.refreshState = false
+            }
+            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.loadTable), object: self.githubSearchTableView)
+            self.perform(#selector(self.loadTable), with: nil, afterDelay: 0.5)
+        }
+    }
+    
+    func removeAllData() {
+        self.searchUsersItems.removeAll()
+        self.displaySearchUsersItems.removeAll()
+        self.usersNamesArray.removeAll()
+        self.usersPublicRepoCntArray.removeAll()
+        self.totalEntries = 0
+        self.limit = 20
+        self.refreshState = false
     }
 
-    
     @objc func loadTable() {
         self.githubSearchTableView.reloadData()
     }

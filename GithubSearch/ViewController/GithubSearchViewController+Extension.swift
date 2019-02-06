@@ -10,21 +10,14 @@ import UIKit
 
 extension GithubSearchViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        self.removeAllData()
         if searchText.count == 0 {
             self.noDataLabel.isHidden = false
-            self.searchUsersItems.removeAll()
-            self.displaySearchUsersItems.removeAll()
-            self.usersNamesArray.removeAll()
-            self.usersPublicRepoCntArray.removeAll()
-            self.perform(#selector(self.loadTable), with: nil, afterDelay: 1.0)
+            NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.loadTable), object: searchBar)
+            self.perform(#selector(self.loadTable), with: nil, afterDelay: 0.5)
+            
         } else {
             self.noDataLabel.isHidden = true
-            if self.searchUsersItems.count != 0 {
-                self.searchUsersItems.removeAll()
-                self.displaySearchUsersItems.removeAll()
-                self.usersNamesArray.removeAll()
-                self.usersPublicRepoCntArray.removeAll()
-            }
             GithubSearchService.shared.getUserList(keyword: searchText, token: self.token) { (res) in
                 self.searchUsersItems = res
                 self.totalEntries = self.searchUsersItems.count
@@ -52,10 +45,19 @@ extension GithubSearchViewController: UITableViewDelegate, UITableViewDataSource
             if self.displaySearchUsersItems.count < self.totalEntries {
                 let startIndex = displaySearchUsersItems.count
                 self.limit = startIndex + 20
-            
+                
+                self.spinner = UIActivityIndicatorView.init(style: .gray)
+                self.spinner.startAnimating()
+                self.spinner.frame = CGRect(x: CGFloat(0), y: CGFloat(0), width: tableView.bounds.width, height: CGFloat(44))
+                self.githubSearchTableView.tableFooterView = spinner
+                self.refreshState = true
+                self.githubSearchTableView.tableFooterView?.isHidden = false
+                
                 self.appenddisplaySearchUsersItems(startIndex: startIndex)
             }
         }
     }
 }
+
+
 
